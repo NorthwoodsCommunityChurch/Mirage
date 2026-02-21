@@ -23,6 +23,11 @@ struct MirageApp: App {
                 .onAppear {
                     appDelegate.appState = appState
                     Task { await appState.initialSetup() }
+                    // Check for crash report from previous session.
+                    // Delay briefly so the window is fully visible before showing the alert.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                        CrashReporter.shared.promptIfNeeded()
+                    }
                 }
                 .alert("Error", isPresented: $appState.showAlert) {
                     Button("OK") {}

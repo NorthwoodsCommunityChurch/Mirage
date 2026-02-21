@@ -5,10 +5,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var appState: AppState?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        // Initial setup is triggered by the app's onAppear
+        // Install crash handlers as early as possible
+        CrashReporter.shared.install()
+        AppLogger.shared.log("App launched")
     }
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        AppLogger.shared.log("App terminating")
         guard let appState else { return .terminateNow }
 
         // Clean up all mounts before quitting.

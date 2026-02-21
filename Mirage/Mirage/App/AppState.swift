@@ -75,9 +75,11 @@ final class AppState: ObservableObject {
     // MARK: - Setup
 
     func initialSetup() async {
+        AppLogger.shared.log("Initial setup started")
         let validation = await processManager.validateRclone()
         rcloneValid = validation.valid
         rcloneVersion = validation.version
+        AppLogger.shared.log("rclone valid: \(validation.valid), version: \(validation.version ?? "nil")")
 
         // Clean up orphan rclone processes and stale NFS mounts from
         // previous app sessions that may have been force-quit.
@@ -102,6 +104,7 @@ final class AppState: ObservableObject {
 
     func mount(shareId: UUID) async {
         guard let share = shareStore.share(for: shareId) else { return }
+        AppLogger.shared.log("Mount started for '\(share.displayName)' (\(share.host)/\(share.shareName))")
 
         // Check if custom cache location is available (e.g., external drive connected)
         if let customPath = share.customCachePath {
@@ -117,6 +120,7 @@ final class AppState: ObservableObject {
         do {
             try await processManager.mount(share: share, maxCacheSizeGB: globalMaxCacheGB)
             mountStatuses[shareId] = .mounted
+            AppLogger.shared.log("Mount succeeded for '\(share.displayName)'")
 
             // Update last mounted date
             var updated = share
@@ -130,6 +134,7 @@ final class AppState: ObservableObject {
                 cacheWarmer.startWarming(shareId: shareId, mountPoint: share.mountPoint)
             }
         } catch {
+            AppLogger.shared.log("Mount failed for '\(share.displayName)': \(error.localizedDescription)")
             mountStatuses[shareId] = .error(error.localizedDescription)
             showError(error.localizedDescription)
         }
@@ -137,6 +142,7 @@ final class AppState: ObservableObject {
 
     func unmount(shareId: UUID) async {
         guard let share = shareStore.share(for: shareId) else { return }
+        AppLogger.shared.log("Unmount started for '\(share.displayName)'")
         mountStatuses[shareId] = .unmounting
 
         // Stop cache warming if active
@@ -184,6 +190,7 @@ final class AppState: ObservableObject {
     // MARK: - Share management
 
     func addShare(_ config: SMBShareConfig, password: String) async {
+        AppLogger.shared.log("Adding share '\(config.displayName)' (\(config.host)/\(config.shareName))")
         do {
             // Store password in Keychain
             try shareStore.storePassword(password, for: config)
@@ -230,6 +237,7 @@ final class AppState: ObservableObject {
 
     func removeShare(id: UUID) async {
         guard let share = shareStore.share(for: id) else { return }
+        AppLogger.shared.log("Removing share '\(share.displayName)'")
 
         // Unmount if running
         if mountStatuses[id]?.isActive == true {
@@ -331,6 +339,7 @@ final class AppState: ObservableObject {
     // MARK: - Cleanup
 
     func cleanup() {
+        AppLogger.shared.log("Cleanup: stopping all services")
         cacheWarmer.cancelAll()
         statusMonitor.stop()
         processManager.terminateAll()

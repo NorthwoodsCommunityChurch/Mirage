@@ -31,6 +31,7 @@ enum SMBDetectionError: LocalizedError {
 struct SMBShareDetector {
     /// Extracts SMB server info from a path on a mounted network share.
     static func detect(from url: URL) throws -> SMBDropInfo {
+        AppLogger.shared.log("SMB detection started for: \(url.path)")
         // Check if it's a network volume
         let resourceValues = try url.resourceValues(forKeys: [
             .volumeIsLocalKey,

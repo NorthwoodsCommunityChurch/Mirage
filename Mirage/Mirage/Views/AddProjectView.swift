@@ -359,6 +359,7 @@ struct AddProjectView: View {
     }
 
     private func testConnection() {
+        AppLogger.shared.log("Testing connection to \(host) as \(username)")
         isTestingConnection = true
         connectionError = nil
 
@@ -410,6 +411,7 @@ struct AddProjectView: View {
     }
 
     private func addProject() {
+        AppLogger.shared.log("Adding project '\(displayName)' (\(host)/\(shareName))")
         isAddingProject = true
 
         let syncMode: ProjectSyncMode = keepLocal ? .keepLocal : .stream

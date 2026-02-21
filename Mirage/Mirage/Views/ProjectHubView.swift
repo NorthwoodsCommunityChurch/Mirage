@@ -6,6 +6,7 @@ struct ProjectHubView: View {
     @EnvironmentObject var appState: AppState
     @State private var selectedProject: SMBShareConfig?
     @State private var isDragTargeted = false
+    @State private var isDetecting = false
 
     var body: some View {
         Group {
@@ -83,6 +84,17 @@ struct ProjectHubView: View {
             if isDragTargeted {
                 DropOverlayView()
             }
+            if isDetecting {
+                VStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.regular)
+                    Text("Detecting network share...")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.ultraThinMaterial)
+            }
         }
         .onDrop(of: [.fileURL], isTargeted: $isDragTargeted) { providers in
             handleDrop(providers)
@@ -96,10 +108,21 @@ struct ProjectHubView: View {
                   let url = URL(dataRepresentation: data, relativeTo: nil) else {
                 return
             }
-            DispatchQueue.main.async {
-                if let info = try? SMBShareDetector.detect(from: url) {
-                    appState.dropInfo = info
-                    appState.showAddShare = true
+            DispatchQueue.main.async { isDetecting = true }
+            AppLogger.shared.log("Drop detected, starting SMB detection for: \(url.path)")
+            // Run blocking filesystem I/O on a background thread
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = Result { try SMBShareDetector.detect(from: url) }
+                DispatchQueue.main.async {
+                    isDetecting = false
+                    switch result {
+                    case .success(let info):
+                        AppLogger.shared.log("SMB detection succeeded: \(info.host)/\(info.shareName)")
+                        appState.dropInfo = info
+                        appState.showAddShare = true
+                    case .failure(let error):
+                        AppLogger.shared.log("SMB detection failed: \(error.localizedDescription)")
+                    }
                 }
             }
         }

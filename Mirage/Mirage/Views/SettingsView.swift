@@ -74,6 +74,7 @@ struct AdvancedSettingsTab: View {
     @EnvironmentObject var appState: AppState
     @StateObject private var installer = RcloneInstaller()
     @State private var rclonePath: String = ""
+    @State private var reportKey: String = ""
 
     var body: some View {
         Form {
@@ -181,6 +182,25 @@ struct AdvancedSettingsTab: View {
                     .foregroundStyle(.secondary)
             }
 
+            Section("Crash Reporting") {
+                HStack {
+                    SecureField("Report Key", text: $reportKey)
+                        .textFieldStyle(.roundedBorder)
+                        .onAppear { reportKey = UserDefaults.standard.string(forKey: "crashReportKey") ?? "" }
+                        .onSubmit { saveCrashReportKey() }
+                        .onChange(of: reportKey) { saveCrashReportKey() }
+
+                    if !reportKey.isEmpty {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    }
+                }
+
+                Text("If provided, crash reports are sent directly to the developers. Ask your admin for this key.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
             Section("Locations") {
                 HStack {
                     Text("Local file cache")
@@ -211,5 +231,14 @@ struct AdvancedSettingsTab: View {
         }
         .formStyle(.grouped)
         .padding()
+    }
+
+    private func saveCrashReportKey() {
+        let trimmed = reportKey.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            UserDefaults.standard.removeObject(forKey: "crashReportKey")
+        } else {
+            UserDefaults.standard.set(trimmed, forKey: "crashReportKey")
+        }
     }
 }

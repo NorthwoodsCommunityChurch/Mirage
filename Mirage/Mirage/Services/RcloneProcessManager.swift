@@ -136,6 +136,7 @@ final class RcloneProcessManager: ObservableObject {
         }
 
         try process.run()
+        AppLogger.shared.log("rclone process spawned (PID \(process.processIdentifier)) for '\(share.displayName)'")
 
         runningMounts[share.id] = MountProcess(
             process: process,
@@ -203,6 +204,7 @@ final class RcloneProcessManager: ObservableObject {
     }
 
     func terminateAll() {
+        AppLogger.shared.log("Terminating all rclone processes (\(runningMounts.count) active)")
         // Collect PIDs before clearing state
         var pids: [Int32] = []
         for (_, mountProcess) in runningMounts {
