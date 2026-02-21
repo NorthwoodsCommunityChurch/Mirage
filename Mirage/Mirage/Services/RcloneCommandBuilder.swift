@@ -83,6 +83,10 @@ struct RcloneCommandBuilder {
             "--volname", share.volumeName,
             "--log-file", logFile,
             "--log-level", "INFO",
+            // Performance: larger buffers and read-ahead reduce round-trips
+            // through the NFS loopback and keep the network saturated
+            "--buffer-size", "64M",
+            "--vfs-read-ahead", "128M",
         ]
 
         // Let rclone enforce the user's storage limit for all folders.

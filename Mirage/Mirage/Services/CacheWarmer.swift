@@ -1,90 +1,67 @@
 import Foundation
 
-/// Tracks download progress and enforces a byte budget from concurrent tasks
-private actor DownloadProgress {
-    private(set) var completedURLs: [URL] = []
-    private(set) var totalBytesWarmed: UInt64 = 0
-    private let byteBudget: UInt64
-    private(set) var isFinished = false
-    var count: Int { completedURLs.count }
-
-    init(byteBudget: UInt64) {
-        self.byteBudget = byteBudget
-    }
-
-    /// Reserve space for a file. Returns true if within budget, false if over.
-    func reserve(bytes: UInt64) -> Bool {
-        guard totalBytesWarmed + bytes <= byteBudget else { return false }
-        totalBytesWarmed += bytes
-        return true
-    }
-
-    func addCompleted(_ url: URL) {
-        completedURLs.append(url)
-    }
-
-    func markFinished() {
-        isFinished = true
-    }
-}
-
 /// Status of cache warming for a single project
 enum WarmStatus: Equatable {
     case idle
-    case warming(filesWarmed: Int, totalFiles: Int)
+    case scanning                // enumerating files on the remote
+    case warming(filesWarmed: Int, totalFiles: Int, bytesDownloaded: UInt64, totalBytes: UInt64)
     case upToDate(fileCount: Int, totalSize: UInt64)
     case partial(filesCached: Int, totalFiles: Int, totalSize: UInt64) // stopped due to storage limit
     case error(String)
 }
 
-/// Walks a mounted directory and reads files to populate rclone's VFS cache.
+/// Downloads all files from a remote share using `rclone copy`, bypassing
+/// the NFS mount entirely. This uses rclone's native parallel transfer
+/// engine for maximum throughput and doesn't interfere with the mount.
 ///
-/// When a project is set to "Keep Local", the CacheWarmer enumerates all files
-/// under the mount point and reads each file in full. This forces rclone to
-/// download and cache every byte. Each warmed file is then marked as
-/// "keep offline" so CacheManager won't evict it.
-///
-/// A periodic re-walk catches new or changed files on the server.
+/// When a project is set to "Keep Local", the CacheWarmer runs a separate
+/// rclone process that copies files from the remote to the VFS cache
+/// directory. A periodic re-sync catches new or changed files.
 @MainActor
 final class CacheWarmer: ObservableObject {
     @Published var warmStatuses: [UUID: WarmStatus] = [:]
 
     private var warmingTasks: [UUID: Task<Void, Never>] = [:]
+    private var warmingProcesses: [UUID: Process] = [:]
     private var periodicTasks: [UUID: Task<Void, Never>] = [:]
 
     private weak var cacheManager: CacheManager?
+    private var rclonePath: String = "/usr/local/bin/rclone"
 
-    /// How often to re-walk for new files (10 minutes)
-    private let rewarmInterval: UInt64 = 10 * 60 * 1_000_000_000
-
-    /// Number of files to download concurrently
-    private let concurrentDownloads = 6
+    /// How often to re-sync for new files (10 minutes)
+    private let resyncInterval: UInt64 = 10 * 60 * 1_000_000_000
 
     func setCacheManager(_ manager: CacheManager) {
         self.cacheManager = manager
     }
 
+    func setRclonePath(_ path: String) {
+        self.rclonePath = path
+    }
+
     // MARK: - Start / Stop
 
-    /// Begin warming all files under the mount point for a project
-    func startWarming(shareId: UUID, mountPoint: String) {
-        stopWarming(shareId: shareId)
-        warmStatuses[shareId] = .warming(filesWarmed: 0, totalFiles: 0)
+    /// Begin warming all files for a project using rclone copy
+    func startWarming(share: SMBShareConfig, maxCacheSizeGB: Int?) {
+        stopWarming(shareId: share.id)
+        warmStatuses[share.id] = .scanning
 
         let task = Task { [weak self] in
-            await self?.warmFiles(shareId: shareId, mountPoint: mountPoint)
+            await self?.warmFiles(share: share, maxCacheSizeGB: maxCacheSizeGB)
 
-            // Schedule periodic re-warm
+            // Schedule periodic re-sync
             guard !Task.isCancelled else { return }
-            await self?.schedulePeriodicWarm(shareId: shareId, mountPoint: mountPoint)
+            await self?.schedulePeriodicWarm(share: share, maxCacheSizeGB: maxCacheSizeGB)
         }
-        warmingTasks[shareId] = task
+        warmingTasks[share.id] = task
     }
 
     /// Stop warming and unmark all offline files for a project
     func stopWarming(shareId: UUID) {
         warmingTasks[shareId]?.cancel()
         warmingTasks.removeValue(forKey: shareId)
+        warmingProcesses[shareId]?.terminate()
+        warmingProcesses.removeValue(forKey: shareId)
         periodicTasks[shareId]?.cancel()
         periodicTasks.removeValue(forKey: shareId)
         warmStatuses[shareId] = .idle
@@ -97,6 +74,10 @@ final class CacheWarmer: ObservableObject {
             warmStatuses[id] = .idle
         }
         warmingTasks.removeAll()
+        for (_, process) in warmingProcesses {
+            process.terminate()
+        }
+        warmingProcesses.removeAll()
         for (_, task) in periodicTasks {
             task.cancel()
         }
@@ -112,150 +93,229 @@ final class CacheWarmer: ObservableObject {
         }
     }
 
-    // MARK: - Warming Logic
+    // MARK: - Warming via rclone copy
 
-    private func warmFiles(shareId: UUID, mountPoint: String) async {
+    private func warmFiles(share: SMBShareConfig, maxCacheSizeGB: Int?) async {
         guard let cacheManager else {
-            warmStatuses[shareId] = .error("Cache manager not available")
+            warmStatuses[share.id] = .error("Cache manager not available")
             return
         }
 
-        let mountURL = URL(fileURLWithPath: mountPoint)
-        guard FileManager.default.fileExists(atPath: mountPoint) else {
-            warmStatuses[shareId] = .error("Mount point not accessible")
+        let shareId = share.id
+
+        // The VFS cache stores files at: <cache-dir>/vfs/<remote>/<path>
+        // We copy directly into that structure so VFS recognizes them
+        let cacheDirURL = cacheManager.cacheDir(for: shareId)
+
+        // Build the destination path to match VFS cache structure:
+        // <cache-dir>/vfs/<remoteName>/<shareName>/<subfolder>
+        var destComponents = [cacheDirURL.path, "vfs", share.rcloneRemoteName, share.shareName]
+        if !share.subfolder.isEmpty {
+            let clean = share.subfolder.hasPrefix("/") ? String(share.subfolder.dropFirst()) : share.subfolder
+            destComponents.append(clean)
+        }
+        let destPath = destComponents.joined(separator: "/")
+
+        // Ensure destination exists
+        try? FileManager.default.createDirectory(
+            atPath: destPath,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+
+        // Use a stats file so we can parse rclone's progress output
+        let statsFile = cacheDirURL
+            .deletingLastPathComponent()
+            .appendingPathComponent("warm-stats.json")
+
+        // Build rclone copy command with aggressive parallelism
+        var args = [
+            "copy",
+            share.remotePath,
+            destPath,
+            "--transfers", "8",
+            "--checkers", "16",
+            "--stats", "1s",
+            "--stats-file-name-length", "0",
+            "--use-json-log",
+            "--stats-log-level", "NOTICE",
+            "--log-file", statsFile.path,
+            "--log-level", "NOTICE",
+        ]
+
+        // Enforce cache size limit — subtract what's already cached globally
+        // so total disk usage never exceeds the user's setting
+        if let gb = maxCacheSizeGB, gb > 0 {
+            let maxBytes = UInt64(gb) * 1_073_741_824
+            let usedBytes = cacheManager.totalCacheSize
+            let remainingBytes = maxBytes > usedBytes ? maxBytes - usedBytes : 0
+            let remainingMB = max(1, remainingBytes / (1024 * 1024)) // at least 1 MB
+            args += ["--max-transfer", "\(remainingMB)M"]
+        }
+
+        AppLogger.shared.log("Cache warming started for '\(share.displayName)' via rclone copy")
+
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: rclonePath)
+        process.arguments = args
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+
+        warmingProcesses[shareId] = process
+
+        do {
+            try process.run()
+        } catch {
+            warmStatuses[shareId] = .error("Failed to start rclone: \(error.localizedDescription)")
+            warmingProcesses.removeValue(forKey: shareId)
             return
         }
 
-        // Enumerate all files under the mount
-        let keys: [URLResourceKey] = [.isRegularFileKey, .fileSizeKey]
-        guard let enumerator = FileManager.default.enumerator(
-            at: mountURL,
-            includingPropertiesForKeys: keys,
-            options: [.skipsHiddenFiles]
-        ) else {
-            warmStatuses[shareId] = .error("Could not enumerate files")
-            return
-        }
+        // Monitor progress by polling the stats file and cache directory
+        warmStatuses[shareId] = .warming(filesWarmed: 0, totalFiles: 0, bytesDownloaded: 0, totalBytes: 0)
 
-        // Collect file URLs and their sizes so we can enforce the cache budget
-        var fileEntries: [(url: URL, size: UInt64)] = []
-        for case let fileURL as URL in enumerator {
-            guard !Task.isCancelled else { return }
-            guard let values = try? fileURL.resourceValues(forKeys: Set(keys)),
-                  values.isRegularFile == true else { continue }
-            let size = UInt64(values.fileSize ?? 0)
-            fileEntries.append((url: fileURL, size: size))
-        }
-
-        guard !Task.isCancelled else { return }
-
-        // Calculate the byte budget: how much space is available in the cache
-        let existingCacheSize = cacheManager.totalCacheSize
-        let maxCacheSize = cacheManager.maxCacheSize
-        let byteBudget = maxCacheSize > existingCacheSize ? maxCacheSize - existingCacheSize : 0
-
-        // Filter out files that won't fit individually, then sort smallest-first
-        // to maximize the number of files we can cache
-        let totalOnServer = fileEntries.count
-        fileEntries = fileEntries
-            .filter { $0.size <= byteBudget }
-            .sorted { $0.size < $1.size }
-
-        warmStatuses[shareId] = .warming(filesWarmed: 0, totalFiles: totalOnServer)
-
-        let mountPrefix = mountPoint.hasSuffix("/") ? mountPoint : mountPoint + "/"
-        let progress = DownloadProgress(byteBudget: byteBudget)
-        let maxConcurrent = concurrentDownloads
-
-        // Run all downloads in a DETACHED task so they escape @MainActor
-        // and actually run in parallel. withTaskGroup inside @MainActor
-        // serializes child tasks — this is the workaround.
-        let downloadTask = Task.detached(priority: .utility) {
-            await withTaskGroup(of: Void.self) { group in
-                var inFlight = 0
-
-                for entry in fileEntries {
-                    guard !Task.isCancelled else { break }
-
-                    // Check budget before starting a new download
-                    let reserved = await progress.reserve(bytes: entry.size)
-                    guard reserved else { break }
-
-                    // Limit concurrent downloads
-                    if inFlight >= maxConcurrent {
-                        _ = await group.next()
-                        inFlight -= 1
-                    }
-
-                    let fileURL = entry.url
-                    group.addTask {
-                        do {
-                            let handle = try FileHandle(forReadingFrom: fileURL)
-                            defer { try? handle.close() }
-                            // Read in 1 MB chunks — larger chunks = fewer round-trips
-                            while true {
-                                guard let chunk = try handle.read(upToCount: 1_048_576),
-                                      !chunk.isEmpty else { break }
-                            }
-                            await progress.addCompleted(fileURL)
-                        } catch {
-                            // Skip files we can't read (I/O errors on network mounts, etc.)
-                        }
-                    }
-                    inFlight += 1
-                }
-
-                // Wait for remaining downloads
-                await group.waitForAll()
+        while process.isRunning {
+            if Task.isCancelled {
+                process.terminate()
+                warmingProcesses.removeValue(forKey: shareId)
+                return
             }
-            await progress.markFinished()
+
+            // Parse the latest stats from rclone's JSON log
+            let stats = parseRcloneStats(from: statsFile)
+            let cachedBytes = Self.directorySize(URL(fileURLWithPath: destPath))
+
+            warmStatuses[shareId] = .warming(
+                filesWarmed: stats.transfers,
+                totalFiles: stats.totalFiles,
+                bytesDownloaded: cachedBytes,
+                totalBytes: stats.totalBytes
+            )
+
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
         }
 
-        // Monitor progress from the main actor so the UI updates
-        while true {
-            let count = await progress.count
-            let finished = await progress.isFinished
-            if finished { break }
-            if Task.isCancelled { downloadTask.cancel(); return }
-            warmStatuses[shareId] = .warming(filesWarmed: count, totalFiles: totalOnServer)
-            try? await Task.sleep(nanoseconds: 500_000_000) // update every 0.5s
-        }
-        await downloadTask.value
+        warmingProcesses.removeValue(forKey: shareId)
 
         guard !Task.isCancelled else { return }
 
-        // Mark all successfully downloaded files as offline-protected
-        let completedURLs = await progress.completedURLs
-        for url in completedURLs {
-            let path = url.path.replacingOccurrences(of: mountPrefix, with: "")
-            cacheManager.markOffline(shareId: shareId, relativePath: path)
+        // Clean up stats file
+        try? FileManager.default.removeItem(at: statsFile)
+
+        // Scan what we actually downloaded
+        let downloadedFiles = Self.listFiles(at: URL(fileURLWithPath: destPath))
+        let totalSize = downloadedFiles.reduce(UInt64(0)) { $0 + $1.size }
+
+        // Mark all downloaded files as offline-protected
+        let mountPrefix = share.mountPoint.hasSuffix("/") ? share.mountPoint : share.mountPoint + "/"
+        for file in downloadedFiles {
+            // Convert cache path to relative path for the share
+            let relativePath = file.url.path.replacingOccurrences(of: destPath + "/", with: "")
+            cacheManager.markOffline(shareId: shareId, relativePath: relativePath)
         }
 
-        // Refresh cache stats and use actual cached sizes for the final status
-        await cacheManager.refreshCache(shareIds: [shareId])
-        let actualCached = cacheManager.cachedFiles[shareId] ?? []
-        let actualSize = actualCached.reduce(UInt64(0)) { $0 + $1.size }
-
-        if completedURLs.count < totalOnServer {
-            // Not all files were downloaded — storage budget ran out
-            warmStatuses[shareId] = .partial(
-                filesCached: actualCached.count,
-                totalFiles: totalOnServer,
-                totalSize: actualSize
-            )
+        if process.terminationStatus == 0 {
+            AppLogger.shared.log("Cache warming complete for '\(share.displayName)': \(downloadedFiles.count) files, \(totalSize.formattedByteCount)")
+            warmStatuses[shareId] = .upToDate(fileCount: downloadedFiles.count, totalSize: totalSize)
         } else {
-            warmStatuses[shareId] = .upToDate(fileCount: actualCached.count, totalSize: actualSize)
+            // rclone exited with an error — could be partial transfer
+            let exitMsg = process.terminationStatus == 15 ? "cancelled" : "rclone exit code \(process.terminationStatus)"
+            AppLogger.shared.log("Cache warming ended for '\(share.displayName)': \(exitMsg)")
+            if downloadedFiles.count > 0 {
+                warmStatuses[shareId] = .partial(
+                    filesCached: downloadedFiles.count,
+                    totalFiles: downloadedFiles.count, // we don't know total from rclone exit
+                    totalSize: totalSize
+                )
+            } else {
+                warmStatuses[shareId] = .error("Download failed: \(exitMsg)")
+            }
         }
     }
 
-    private func schedulePeriodicWarm(shareId: UUID, mountPoint: String) async {
-        let task = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: self?.rewarmInterval ?? 600_000_000_000)
-                guard !Task.isCancelled else { return }
-                await self?.warmFiles(shareId: shareId, mountPoint: mountPoint)
+    // MARK: - rclone stats parsing
+
+    private struct RcloneStats {
+        var transfers: Int = 0
+        var totalFiles: Int = 0
+        var totalBytes: UInt64 = 0
+    }
+
+    /// Parse the last JSON stats line from rclone's log file
+    private func parseRcloneStats(from url: URL) -> RcloneStats {
+        guard let data = try? Data(contentsOf: url),
+              let text = String(data: data, encoding: .utf8) else {
+            return RcloneStats()
+        }
+
+        // rclone writes one JSON object per stats line; we want the last one
+        let lines = text.components(separatedBy: "\n").reversed()
+        for line in lines {
+            guard !line.isEmpty,
+                  let lineData = line.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: lineData) as? [String: Any],
+                  let stats = json["stats"] as? [String: Any] else { continue }
+
+            var result = RcloneStats()
+            result.transfers = stats["transfers"] as? Int ?? 0
+            result.totalBytes = stats["totalBytes"] as? UInt64
+                ?? UInt64(stats["totalBytes"] as? Int ?? 0)
+
+            // totalChecks gives us the file count (checker = file enumerated)
+            let totalChecks = stats["totalChecks"] as? Int ?? 0
+            let totalTransfers = stats["totalTransfers"] as? Int ?? 0
+            result.totalFiles = max(totalChecks, totalTransfers)
+
+            return result
+        }
+
+        return RcloneStats()
+    }
+
+    // MARK: - Helpers
+
+    /// Sum of all file sizes in a directory
+    private static func directorySize(_ url: URL) -> UInt64 {
+        guard let enumerator = FileManager.default.enumerator(
+            at: url,
+            includingPropertiesForKeys: [.fileSizeKey],
+            options: [.skipsHiddenFiles]
+        ) else { return 0 }
+
+        var total: UInt64 = 0
+        for case let fileURL as URL in enumerator {
+            if let size = try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                total += UInt64(size)
             }
         }
-        periodicTasks[shareId] = task
+        return total
+    }
+
+    /// List all files with their sizes
+    private static func listFiles(at url: URL) -> [(url: URL, size: UInt64)] {
+        guard let enumerator = FileManager.default.enumerator(
+            at: url,
+            includingPropertiesForKeys: [.isRegularFileKey, .fileSizeKey],
+            options: [.skipsHiddenFiles]
+        ) else { return [] }
+
+        var results: [(url: URL, size: UInt64)] = []
+        for case let fileURL as URL in enumerator {
+            guard let values = try? fileURL.resourceValues(forKeys: [.isRegularFileKey, .fileSizeKey]),
+                  values.isRegularFile == true else { continue }
+            results.append((url: fileURL, size: UInt64(values.fileSize ?? 0)))
+        }
+        return results
+    }
+
+    private func schedulePeriodicWarm(share: SMBShareConfig, maxCacheSizeGB: Int?) async {
+        let task = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: self?.resyncInterval ?? 600_000_000_000)
+                guard !Task.isCancelled else { return }
+                await self?.warmFiles(share: share, maxCacheSizeGB: maxCacheSizeGB)
+            }
+        }
+        periodicTasks[share.id] = task
     }
 }

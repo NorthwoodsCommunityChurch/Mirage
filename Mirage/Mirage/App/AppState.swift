@@ -33,7 +33,10 @@ final class AppState: ObservableObject {
 
     // Settings (persisted via UserDefaults)
     @AppStorage("rclonePath") var rclonePath = "/usr/local/bin/rclone" {
-        didSet { rebuildCommandBuilder() }
+        didSet {
+            rebuildCommandBuilder()
+            cacheWarmer.setRclonePath(rclonePath)
+        }
     }
     @AppStorage("globalMaxCacheGB") var globalMaxCacheGB = 50 {
         didSet { cacheManager.updateMaxCacheSize(gb: globalMaxCacheGB) }
@@ -67,6 +70,7 @@ final class AppState: ObservableObject {
 
         // Wire up cache warmer
         cacheWarmer.setCacheManager(cacheManager)
+        cacheWarmer.setRclonePath(rclonePath)
         cacheWarmer.$warmStatuses
             .receive(on: DispatchQueue.main)
             .assign(to: &$warmStatuses)
@@ -131,7 +135,7 @@ final class AppState: ObservableObject {
 
             // Start cache warming if this project is set to "Keep Local"
             if share.syncMode == .keepLocal {
-                cacheWarmer.startWarming(shareId: shareId, mountPoint: share.mountPoint)
+                cacheWarmer.startWarming(share: share, maxCacheSizeGB: globalMaxCacheGB)
             }
         } catch {
             AppLogger.shared.log("Mount failed for '\(share.displayName)': \(error.localizedDescription)")
@@ -284,7 +288,7 @@ final class AppState: ObservableObject {
 
         // If already mounted, start warming immediately
         if mountStatuses[shareId] == .mounted {
-            cacheWarmer.startWarming(shareId: shareId, mountPoint: share.mountPoint)
+            cacheWarmer.startWarming(share: share, maxCacheSizeGB: globalMaxCacheGB)
         }
         // If not mounted, warming will start after mount (see mount method)
     }

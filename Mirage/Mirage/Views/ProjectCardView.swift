@@ -119,14 +119,32 @@ struct ProjectCardView: View {
     @ViewBuilder
     private var downloadStatusView: some View {
         switch warmStatus {
-        case .warming(let done, let total) where total > 0:
-            VStack(alignment: .leading, spacing: 4) {
-                ProgressView(value: Double(done), total: Double(total))
+        case .scanning:
+            HStack(spacing: 6) {
+                ProgressView()
                     .controlSize(.small)
-                Text("Downloading \(done) of \(total) files...")
+                Text("Scanning files...")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
-                    .monospacedDigit()
+            }
+        case .warming(let done, let total, let bytesDown, let bytesTotal) where total > 0:
+            VStack(alignment: .leading, spacing: 4) {
+                ProgressView(value: bytesTotal > 0 ? Double(bytesDown) : Double(done),
+                             total: bytesTotal > 0 ? Double(bytesTotal) : Double(total))
+                    .controlSize(.small)
+                HStack {
+                    Text("Downloading \(done) of \(total) files")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                    Spacer()
+                    if bytesTotal > 0 {
+                        Text("\(bytesDown.formattedByteCount) of \(bytesTotal.formattedByteCount)")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                }
             }
         case .upToDate(let count, let size):
             HStack(spacing: 4) {
