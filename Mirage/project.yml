@@ -1,0 +1,60 @@
+name: Mirage
+
+packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    from: "2.0.0"
+
+options:
+  bundleIdPrefix: com.mirage
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "15.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    MACOSX_DEPLOYMENT_TARGET: "14.0"
+
+targets:
+  Mirage:
+    type: application
+    platform: macOS
+    sources:
+      - path: Mirage
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mirage.app
+        PRODUCT_NAME: Mirage
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: "1"
+        INFOPLIST_FILE: Mirage/Resources/Info.plist
+        CODE_SIGN_ENTITLEMENTS: Mirage/Resources/Mirage.entitlements
+        CODE_SIGN_IDENTITY: "-"
+        CODE_SIGN_STYLE: Manual
+        ENABLE_HARDENED_RUNTIME: false
+        COMBINE_HIDPI_IMAGES: true
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        GENERATE_INFOPLIST_FILE: false
+        SWIFT_EMIT_LOC_STRINGS: true
+    dependencies:
+      - package: Sparkle
+    entitlements:
+      path: Mirage/Resources/Mirage.entitlements
+
+  MirageTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - path: MirageTests
+    dependencies:
+      - target: Mirage
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.mirage.tests
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Mirage.app/Contents/MacOS/Mirage"

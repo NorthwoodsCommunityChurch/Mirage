@@ -1,0 +1,31 @@
+# Build artifacts
+build/
+DerivedData/
+*.o
+*.d
+
+# Xcode
+*.xcodeproj/xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+*.xcworkspace/xcshareddata/WorkspaceSettings.xcsettings
+
+# SPM
+.build/
+*.resolved
+
+# OS
+.DS_Store
+.AppleDouble
+.vscode/
+
+# Release archives — never commit binaries
+*.zip
+*.dmg
+*.app
+
+# Debug symbols
+*.dSYM/
+
+# Logs
+*.log

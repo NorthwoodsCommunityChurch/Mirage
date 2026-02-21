@@ -1,0 +1,629 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		01BDD187AE86E2E20616ED90 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95967172BBCA950F16193170 /* MenuBarView.swift */; };
+		0286C71251D8C505A478DC9F /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74717616006CC10DE13536AC /* AppState.swift */; };
+		035C7574A5BA419CFC2D3893 /* RcloneCommandBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AC8843C2F3992BAC40D1939 /* RcloneCommandBuilder.swift */; };
+		08048319E80608DBE4F53A81 /* EmptyHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31BB0CBD56F2AF78E36728E0 /* EmptyHubView.swift */; };
+		0D6D8DF7E0BCD5FBFBE7700B /* ByteCountFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7806CC4C584D3E99B8C97175 /* ByteCountFormatting.swift */; };
+		14FA2FC58235E798D10AAC78 /* ShareStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E940DAA7213ACF5172DAA1C4 /* ShareStore.swift */; };
+		16F58829A73990DF18DC9661 /* ProcessExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE9A395259143175AA6B051D /* ProcessExtensions.swift */; };
+		283F55BF40D9324CAFA72B60 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E6782FE8272D9DD29DAB9B9C /* CacheManager.swift */; };
+		323E70011566B47DD07F8E3F /* RcloneCommandBuilderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 190BC0542E9E1CD65FFC8E5E /* RcloneCommandBuilderTests.swift */; };
+		42944BC774035F93C334EA81 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = CEFF40EC0083735E74372E2B /* Assets.xcassets */; };
+		4B51E2C9DAA080EF89B09D51 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E4F081ABAA781E0D912A6E94 /* Sparkle */; };
+		52C28BAC40855D2856756228 /* StatusMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72FA61FCB28AC71BA8A5A6B5 /* StatusMonitor.swift */; };
+		542CB09F1A24A160B17E3845 /* StatusDotView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40E52C05428886EAB8962EBA /* StatusDotView.swift */; };
+		548D9399981510C4C10B2B3F /* Terminology.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63682BD76B80F22E77E16882 /* Terminology.swift */; };
+		5E41B5B0BE85A5A353C7759E /* FileManagerExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = F28E5F31CE1DE9B8B51D512C /* FileManagerExtensions.swift */; };
+		650FD23E3434999BF1FDAF78 /* SMBShareConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3585CF8060EDD85C5F1F56B4 /* SMBShareConfig.swift */; };
+		6A093B1561F547A7C00CD02F /* RcloneInstaller.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE902CA4150785CB19659497 /* RcloneInstaller.swift */; };
+		76608EEC735D0A0FD3981BBA /* RcloneProcessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC4538E8B34BE4D6AF0F144 /* RcloneProcessManager.swift */; };
+		7966E0B78E68DDB6BA40CBC7 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75B0E36D463279D9E0DFFAC2 /* AppDelegate.swift */; };
+		7F555798227E1CC237738CAA /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9A219370D4994640D780F03 /* OnboardingView.swift */; };
+		87A9787E906946F1995A874B /* VFSCacheMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 759EA0FFFC697906EF33DBB0 /* VFSCacheMode.swift */; };
+		9EF7EAAEB9B9374F482267E5 /* MountStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97484C66F98D983CE281F402 /* MountStatus.swift */; };
+		B05141D179C88B4082EB5267 /* ProjectStorageBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E78836DDAEDE793B265BF81 /* ProjectStorageBar.swift */; };
+		B2649E3DCFEB4E803CAA3E1A /* DropOverlayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FCCD7176EAF9415DE665653 /* DropOverlayView.swift */; };
+		B705D48C97E2235527557427 /* ProjectCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6AF76A73408ECC427EF4309B /* ProjectCardView.swift */; };
+		BED4F1D123D1DE1AB52684B9 /* MirageApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 93795FADCFBBB88518A2ED8E /* MirageApp.swift */; };
+		D3BD8F4FDB4C4FFA726A6460 /* SyncModePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8382704E094897348C1A6633 /* SyncModePicker.swift */; };
+		D4182C9612A29C49BA67E3F0 /* SMBShareDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 013C509CFA70F364F5822F82 /* SMBShareDetector.swift */; };
+		D56EEF5A628608B0BA89B76C /* KeychainHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4631C46B60436E6CC8061C6F /* KeychainHelper.swift */; };
+		D818B2267779225E18735B10 /* ProjectDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0CBE02E710BEC845CA7B0115 /* ProjectDetailView.swift */; };
+		E0F027F3B3B30A0A7700402C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32C460F0C161EDC315F1E41F /* SettingsView.swift */; };
+		E177A0DB1E6C37EC2D299546 /* AddProjectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8F52095FE3C580DDA61EFB0 /* AddProjectView.swift */; };
+		E6AE7DBF8C081E083E5E31E8 /* CacheWarmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A45784601D45894BBE04598 /* CacheWarmer.swift */; };
+		EECC7CA8F51EAF07E3141F30 /* DesignSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F9FB051B06591E335A7929 /* DesignSystem.swift */; };
+		EF506AC4D7C1A4E96C508754 /* StorageOverviewBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE35D2F29359E9E9C7B63ED0 /* StorageOverviewBar.swift */; };
+		F560AFD880E5F32E2C4AF598 /* ProjectHubView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10C5F5F859BD8405B2F4D0AF /* ProjectHubView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		135E775C87B756E266F879B7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 64BB6AA7F87D7B7DEDE3C3FE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B48E88F0AED84BCCAF04F865;
+			remoteInfo = Mirage;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		00D43FE79750C8F62A50A98B /* Mirage.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Mirage.entitlements; sourceTree = "<group>"; };
+		013C509CFA70F364F5822F82 /* SMBShareDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMBShareDetector.swift; sourceTree = "<group>"; };
+		02FB5AF7487AD521492FE23C /* MirageTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MirageTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		0CBE02E710BEC845CA7B0115 /* ProjectDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectDetailView.swift; sourceTree = "<group>"; };
+		0E78836DDAEDE793B265BF81 /* ProjectStorageBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectStorageBar.swift; sourceTree = "<group>"; };
+		10C5F5F859BD8405B2F4D0AF /* ProjectHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectHubView.swift; sourceTree = "<group>"; };
+		190BC0542E9E1CD65FFC8E5E /* RcloneCommandBuilderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RcloneCommandBuilderTests.swift; sourceTree = "<group>"; };
+		1F1B24601B3BA9FBB7FA9EBA /* Mirage.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Mirage.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1FCCD7176EAF9415DE665653 /* DropOverlayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DropOverlayView.swift; sourceTree = "<group>"; };
+		31BB0CBD56F2AF78E36728E0 /* EmptyHubView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmptyHubView.swift; sourceTree = "<group>"; };
+		32C460F0C161EDC315F1E41F /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		3585CF8060EDD85C5F1F56B4 /* SMBShareConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SMBShareConfig.swift; sourceTree = "<group>"; };
+		40E52C05428886EAB8962EBA /* StatusDotView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusDotView.swift; sourceTree = "<group>"; };
+		4631C46B60436E6CC8061C6F /* KeychainHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainHelper.swift; sourceTree = "<group>"; };
+		5A45784601D45894BBE04598 /* CacheWarmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheWarmer.swift; sourceTree = "<group>"; };
+		5EC4538E8B34BE4D6AF0F144 /* RcloneProcessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RcloneProcessManager.swift; sourceTree = "<group>"; };
+		61F9FB051B06591E335A7929 /* DesignSystem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignSystem.swift; sourceTree = "<group>"; };
+		63682BD76B80F22E77E16882 /* Terminology.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Terminology.swift; sourceTree = "<group>"; };
+		6AF76A73408ECC427EF4309B /* ProjectCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectCardView.swift; sourceTree = "<group>"; };
+		72FA61FCB28AC71BA8A5A6B5 /* StatusMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusMonitor.swift; sourceTree = "<group>"; };
+		74717616006CC10DE13536AC /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		759EA0FFFC697906EF33DBB0 /* VFSCacheMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VFSCacheMode.swift; sourceTree = "<group>"; };
+		75B0E36D463279D9E0DFFAC2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		7806CC4C584D3E99B8C97175 /* ByteCountFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ByteCountFormatting.swift; sourceTree = "<group>"; };
+		7AC8843C2F3992BAC40D1939 /* RcloneCommandBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RcloneCommandBuilder.swift; sourceTree = "<group>"; };
+		8382704E094897348C1A6633 /* SyncModePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncModePicker.swift; sourceTree = "<group>"; };
+		93795FADCFBBB88518A2ED8E /* MirageApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MirageApp.swift; sourceTree = "<group>"; };
+		95967172BBCA950F16193170 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
+		97484C66F98D983CE281F402 /* MountStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MountStatus.swift; sourceTree = "<group>"; };
+		AE35D2F29359E9E9C7B63ED0 /* StorageOverviewBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageOverviewBar.swift; sourceTree = "<group>"; };
+		CEFF40EC0083735E74372E2B /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		DE902CA4150785CB19659497 /* RcloneInstaller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RcloneInstaller.swift; sourceTree = "<group>"; };
+		E6782FE8272D9DD29DAB9B9C /* CacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheManager.swift; sourceTree = "<group>"; };
+		E940DAA7213ACF5172DAA1C4 /* ShareStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareStore.swift; sourceTree = "<group>"; };
+		EE9A395259143175AA6B051D /* ProcessExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProcessExtensions.swift; sourceTree = "<group>"; };
+		F1B787B0BE92FA77D93D0CC8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		F28E5F31CE1DE9B8B51D512C /* FileManagerExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FileManagerExtensions.swift; sourceTree = "<group>"; };
+		F8F52095FE3C580DDA61EFB0 /* AddProjectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddProjectView.swift; sourceTree = "<group>"; };
+		F9A219370D4994640D780F03 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		D685DA08310A8C12F6E29BB0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4B51E2C9DAA080EF89B09D51 /* Sparkle in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3E514C3C34FE85763C0BDEC4 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1F1B24601B3BA9FBB7FA9EBA /* Mirage.app */,
+				02FB5AF7487AD521492FE23C /* MirageTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		47B6A7737E43768798F33CB1 /* MirageTests */ = {
+			isa = PBXGroup;
+			children = (
+				190BC0542E9E1CD65FFC8E5E /* RcloneCommandBuilderTests.swift */,
+			);
+			path = MirageTests;
+			sourceTree = "<group>";
+		};
+		66E075148D4A561A26BD1AE6 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				E6782FE8272D9DD29DAB9B9C /* CacheManager.swift */,
+				5A45784601D45894BBE04598 /* CacheWarmer.swift */,
+				4631C46B60436E6CC8061C6F /* KeychainHelper.swift */,
+				7AC8843C2F3992BAC40D1939 /* RcloneCommandBuilder.swift */,
+				DE902CA4150785CB19659497 /* RcloneInstaller.swift */,
+				5EC4538E8B34BE4D6AF0F144 /* RcloneProcessManager.swift */,
+				E940DAA7213ACF5172DAA1C4 /* ShareStore.swift */,
+				013C509CFA70F364F5822F82 /* SMBShareDetector.swift */,
+				72FA61FCB28AC71BA8A5A6B5 /* StatusMonitor.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		6B7783D9F5A143B7C6D7BB91 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				CEFF40EC0083735E74372E2B /* Assets.xcassets */,
+				F1B787B0BE92FA77D93D0CC8 /* Info.plist */,
+				00D43FE79750C8F62A50A98B /* Mirage.entitlements */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		7369AB88D7265957B39C15FA /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				97484C66F98D983CE281F402 /* MountStatus.swift */,
+				3585CF8060EDD85C5F1F56B4 /* SMBShareConfig.swift */,
+				759EA0FFFC697906EF33DBB0 /* VFSCacheMode.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		9427F722FF27C09C187EDBD5 /* Mirage */ = {
+			isa = PBXGroup;
+			children = (
+				988C23A248B1536204A52727 /* App */,
+				7369AB88D7265957B39C15FA /* Models */,
+				6B7783D9F5A143B7C6D7BB91 /* Resources */,
+				66E075148D4A561A26BD1AE6 /* Services */,
+				C0DED6621CB1AED21C215414 /* Utilities */,
+				FB83EEEEE7333D4B364AE23B /* Views */,
+			);
+			path = Mirage;
+			sourceTree = "<group>";
+		};
+		988C23A248B1536204A52727 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				75B0E36D463279D9E0DFFAC2 /* AppDelegate.swift */,
+				74717616006CC10DE13536AC /* AppState.swift */,
+				93795FADCFBBB88518A2ED8E /* MirageApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		C0DED6621CB1AED21C215414 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				7806CC4C584D3E99B8C97175 /* ByteCountFormatting.swift */,
+				F28E5F31CE1DE9B8B51D512C /* FileManagerExtensions.swift */,
+				EE9A395259143175AA6B051D /* ProcessExtensions.swift */,
+				63682BD76B80F22E77E16882 /* Terminology.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
+		CA1F54A8C4CAA0117425397F = {
+			isa = PBXGroup;
+			children = (
+				9427F722FF27C09C187EDBD5 /* Mirage */,
+				47B6A7737E43768798F33CB1 /* MirageTests */,
+				3E514C3C34FE85763C0BDEC4 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FB83EEEEE7333D4B364AE23B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F8F52095FE3C580DDA61EFB0 /* AddProjectView.swift */,
+				61F9FB051B06591E335A7929 /* DesignSystem.swift */,
+				1FCCD7176EAF9415DE665653 /* DropOverlayView.swift */,
+				31BB0CBD56F2AF78E36728E0 /* EmptyHubView.swift */,
+				95967172BBCA950F16193170 /* MenuBarView.swift */,
+				F9A219370D4994640D780F03 /* OnboardingView.swift */,
+				6AF76A73408ECC427EF4309B /* ProjectCardView.swift */,
+				0CBE02E710BEC845CA7B0115 /* ProjectDetailView.swift */,
+				10C5F5F859BD8405B2F4D0AF /* ProjectHubView.swift */,
+				0E78836DDAEDE793B265BF81 /* ProjectStorageBar.swift */,
+				32C460F0C161EDC315F1E41F /* SettingsView.swift */,
+				40E52C05428886EAB8962EBA /* StatusDotView.swift */,
+				AE35D2F29359E9E9C7B63ED0 /* StorageOverviewBar.swift */,
+				8382704E094897348C1A6633 /* SyncModePicker.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B48E88F0AED84BCCAF04F865 /* Mirage */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE72F8760A20C3845CB01CE3 /* Build configuration list for PBXNativeTarget "Mirage" */;
+			buildPhases = (
+				454DA222E1FEEBC5F51C41C4 /* Sources */,
+				B357F57091F2F21E65636BD7 /* Resources */,
+				D685DA08310A8C12F6E29BB0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Mirage;
+			packageProductDependencies = (
+				E4F081ABAA781E0D912A6E94 /* Sparkle */,
+			);
+			productName = Mirage;
+			productReference = 1F1B24601B3BA9FBB7FA9EBA /* Mirage.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F512311A17EEC9EF51CB4BEE /* MirageTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B3A319713A6770BD8357FFB /* Build configuration list for PBXNativeTarget "MirageTests" */;
+			buildPhases = (
+				A05AF7B3101122BFBD7695D4 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA537B8D775152487F5AE46E /* PBXTargetDependency */,
+			);
+			name = MirageTests;
+			packageProductDependencies = (
+			);
+			productName = MirageTests;
+			productReference = 02FB5AF7487AD521492FE23C /* MirageTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		64BB6AA7F87D7B7DEDE3C3FE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					B48E88F0AED84BCCAF04F865 = {
+						ProvisioningStyle = Manual;
+					};
+				};
+			};
+			buildConfigurationList = FA753B8BD8333853E63810A1 /* Build configuration list for PBXProject "Mirage" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = CA1F54A8C4CAA0117425397F;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0AEB33E0B2069747EAC62D6B /* XCRemoteSwiftPackageReference "Sparkle" */,
+			);
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B48E88F0AED84BCCAF04F865 /* Mirage */,
+				F512311A17EEC9EF51CB4BEE /* MirageTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B357F57091F2F21E65636BD7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				42944BC774035F93C334EA81 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		454DA222E1FEEBC5F51C41C4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E177A0DB1E6C37EC2D299546 /* AddProjectView.swift in Sources */,
+				7966E0B78E68DDB6BA40CBC7 /* AppDelegate.swift in Sources */,
+				0286C71251D8C505A478DC9F /* AppState.swift in Sources */,
+				0D6D8DF7E0BCD5FBFBE7700B /* ByteCountFormatting.swift in Sources */,
+				283F55BF40D9324CAFA72B60 /* CacheManager.swift in Sources */,
+				E6AE7DBF8C081E083E5E31E8 /* CacheWarmer.swift in Sources */,
+				EECC7CA8F51EAF07E3141F30 /* DesignSystem.swift in Sources */,
+				B2649E3DCFEB4E803CAA3E1A /* DropOverlayView.swift in Sources */,
+				08048319E80608DBE4F53A81 /* EmptyHubView.swift in Sources */,
+				5E41B5B0BE85A5A353C7759E /* FileManagerExtensions.swift in Sources */,
+				D56EEF5A628608B0BA89B76C /* KeychainHelper.swift in Sources */,
+				01BDD187AE86E2E20616ED90 /* MenuBarView.swift in Sources */,
+				BED4F1D123D1DE1AB52684B9 /* MirageApp.swift in Sources */,
+				9EF7EAAEB9B9374F482267E5 /* MountStatus.swift in Sources */,
+				7F555798227E1CC237738CAA /* OnboardingView.swift in Sources */,
+				16F58829A73990DF18DC9661 /* ProcessExtensions.swift in Sources */,
+				B705D48C97E2235527557427 /* ProjectCardView.swift in Sources */,
+				D818B2267779225E18735B10 /* ProjectDetailView.swift in Sources */,
+				F560AFD880E5F32E2C4AF598 /* ProjectHubView.swift in Sources */,
+				B05141D179C88B4082EB5267 /* ProjectStorageBar.swift in Sources */,
+				035C7574A5BA419CFC2D3893 /* RcloneCommandBuilder.swift in Sources */,
+				6A093B1561F547A7C00CD02F /* RcloneInstaller.swift in Sources */,
+				76608EEC735D0A0FD3981BBA /* RcloneProcessManager.swift in Sources */,
+				650FD23E3434999BF1FDAF78 /* SMBShareConfig.swift in Sources */,
+				D4182C9612A29C49BA67E3F0 /* SMBShareDetector.swift in Sources */,
+				E0F027F3B3B30A0A7700402C /* SettingsView.swift in Sources */,
+				14FA2FC58235E798D10AAC78 /* ShareStore.swift in Sources */,
+				542CB09F1A24A160B17E3845 /* StatusDotView.swift in Sources */,
+				52C28BAC40855D2856756228 /* StatusMonitor.swift in Sources */,
+				EF506AC4D7C1A4E96C508754 /* StorageOverviewBar.swift in Sources */,
+				D3BD8F4FDB4C4FFA726A6460 /* SyncModePicker.swift in Sources */,
+				548D9399981510C4C10B2B3F /* Terminology.swift in Sources */,
+				87A9787E906946F1995A874B /* VFSCacheMode.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A05AF7B3101122BFBD7695D4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				323E70011566B47DD07F8E3F /* RcloneCommandBuilderTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AA537B8D775152487F5AE46E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B48E88F0AED84BCCAF04F865 /* Mirage */;
+			targetProxy = 135E775C87B756E266F879B7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		59A1B4D7CC689EC35C046052 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirage.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mirage.app/Contents/MacOS/Mirage";
+			};
+			name = Release;
+		};
+		79C1EAB9F8AFBD873672F40F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Mirage/Resources/Mirage.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Mirage/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirage.app;
+				PRODUCT_NAME = Mirage;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		9D8C3F682E846E92C1216F90 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		D4C2A33C80D68A03455FA199 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		DB084697A2E2F893339710F9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirage.tests;
+				SDKROOT = macosx;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Mirage.app/Contents/MacOS/Mirage";
+			};
+			name = Debug;
+		};
+		F892431146CEB0352DEBF2E2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Mirage/Resources/Mirage.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_HARDENED_RUNTIME = NO;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Mirage/Resources/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mirage.app;
+				PRODUCT_NAME = Mirage;
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		0B3A319713A6770BD8357FFB /* Build configuration list for PBXNativeTarget "MirageTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB084697A2E2F893339710F9 /* Debug */,
+				59A1B4D7CC689EC35C046052 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FA753B8BD8333853E63810A1 /* Build configuration list for PBXProject "Mirage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				9D8C3F682E846E92C1216F90 /* Debug */,
+				D4C2A33C80D68A03455FA199 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FE72F8760A20C3845CB01CE3 /* Build configuration list for PBXNativeTarget "Mirage" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				79C1EAB9F8AFBD873672F40F /* Debug */,
+				F892431146CEB0352DEBF2E2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		0AEB33E0B2069747EAC62D6B /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		E4F081ABAA781E0D912A6E94 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 0AEB33E0B2069747EAC62D6B /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 64BB6AA7F87D7B7DEDE3C3FE /* Project object */;
+}
