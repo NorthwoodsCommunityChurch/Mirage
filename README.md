@@ -2,10 +2,6 @@
 
 Mount SMB network shares as local Finder volumes with smart caching and offline file support.
 
-## Screenshot
-
-![Mirage main window](docs/images/mirage-main.png)
-
 ## Features
 
 - **One-click mounting** — connect to any SMB share as a local volume in Finder
