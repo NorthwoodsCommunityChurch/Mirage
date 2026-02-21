@@ -8,7 +8,7 @@ struct StatusDotView: View {
     @State private var isPulsing = false
 
     private var shouldPulse: Bool {
-        status == .mounting || status == .unmounting
+        status == .mounting || status == .indexing || status == .unmounting
     }
 
     var body: some View {

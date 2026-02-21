@@ -135,18 +135,18 @@ struct MenuBarProjectRow: View {
 
             Button {
                 Task {
-                    if status == .mounted {
+                    if status == .mounted || status == .indexing {
                         await appState.unmount(shareId: share.id)
                     } else if status == .disconnected {
                         await appState.mount(shareId: share.id)
                     }
                 }
             } label: {
-                Image(systemName: status == .mounted ? "eject" : "play.fill")
+                Image(systemName: (status == .mounted || status == .indexing) ? "eject" : "play.fill")
                     .font(.caption)
             }
             .buttonStyle(.borderless)
-            .disabled(status != .mounted && status != .disconnected)
+            .disabled(status != .mounted && status != .indexing && status != .disconnected)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 4)

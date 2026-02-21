@@ -12,6 +12,7 @@ enum Term {
         switch mountStatus {
         case .disconnected: return "Offline"
         case .mounting: return "Connecting..."
+        case .indexing: return "Indexing files..."
         case .mounted: return "Connected"
         case .error: return "Connection Error"
         case .unmounting: return "Disconnecting..."

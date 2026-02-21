@@ -108,6 +108,13 @@ final class AppState: ObservableObject {
 
     func mount(shareId: UUID) async {
         guard let share = shareStore.share(for: shareId) else { return }
+
+        // Prevent double-mounting — bail out if already active
+        let currentStatus = mountStatuses[shareId]
+        if currentStatus == .mounted || currentStatus == .indexing || currentStatus == .mounting {
+            return
+        }
+
         AppLogger.shared.log("Mount started for '\(share.displayName)' (\(share.host)/\(share.shareName))")
 
         // Check if custom cache location is available (e.g., external drive connected)
@@ -123,8 +130,8 @@ final class AppState: ObservableObject {
 
         do {
             try await processManager.mount(share: share, maxCacheSizeGB: globalMaxCacheGB)
-            mountStatuses[shareId] = .mounted
-            AppLogger.shared.log("Mount succeeded for '\(share.displayName)'")
+            mountStatuses[shareId] = .indexing
+            AppLogger.shared.log("Mount succeeded for '\(share.displayName)', indexing files...")
 
             // Update last mounted date
             var updated = share
@@ -136,6 +143,23 @@ final class AppState: ObservableObject {
             // Start cache warming if this project is set to "Keep Local"
             if share.syncMode == .keepLocal {
                 cacheWarmer.startWarming(share: share, maxCacheSizeGB: globalMaxCacheGB)
+            }
+
+            // Index the root directory in the background so the user sees activity.
+            // rclone populates its directory cache on the first listing, which
+            // generates network traffic. Show "Indexing..." until that finishes.
+            let mountPoint = share.mountPoint
+            let sid = share.id
+            Task.detached {
+                // This blocks until rclone fetches the root directory listing from SMB
+                _ = try? FileManager.default.contentsOfDirectory(atPath: mountPoint)
+                await MainActor.run { [weak self = self] in
+                    guard let self else { return }
+                    if self.mountStatuses[sid] == .indexing {
+                        self.mountStatuses[sid] = .mounted
+                        AppLogger.shared.log("Indexing complete for '\(share.displayName)'")
+                    }
+                }
             }
         } catch {
             AppLogger.shared.log("Mount failed for '\(share.displayName)': \(error.localizedDescription)")
@@ -171,7 +195,7 @@ final class AppState: ObservableObject {
 
     func mountAll() async {
         for share in shareStore.shares {
-            if mountStatuses[share.id] != .mounted {
+            if mountStatuses[share.id] != .mounted && mountStatuses[share.id] != .indexing {
                 await mount(shareId: share.id)
             }
         }
@@ -179,7 +203,7 @@ final class AppState: ObservableObject {
 
     func unmountAll() async {
         for share in shareStore.shares {
-            if mountStatuses[share.id] == .mounted {
+            if mountStatuses[share.id] == .mounted || mountStatuses[share.id] == .indexing {
                 await unmount(shareId: share.id)
             }
         }
@@ -357,7 +381,7 @@ final class AppState: ObservableObject {
             return false
         }) {
             return "externaldrive.badge.exclamationmark"
-        } else if mountStatuses.values.contains(where: { $0 == .mounted }) {
+        } else if mountStatuses.values.contains(where: { $0 == .mounted || $0 == .indexing }) {
             return "externaldrive.fill.badge.checkmark"
         } else {
             return "externaldrive"

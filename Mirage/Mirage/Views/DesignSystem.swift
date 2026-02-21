@@ -24,7 +24,7 @@ enum MirageStyle {
     static func statusColor(for status: MountStatus) -> Color {
         switch status {
         case .mounted: return connected
-        case .mounting, .unmounting: return syncing
+        case .mounting, .indexing, .unmounting: return syncing
         case .error: return error
         case .disconnected: return disconnected
         }

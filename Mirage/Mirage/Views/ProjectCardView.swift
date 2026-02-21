@@ -71,16 +71,16 @@ struct ProjectCardView: View {
                     }
                 } label: {
                     Label(
-                        status == .mounted ? Term.disconnect : Term.connect,
-                        systemImage: status == .mounted ? "stop.circle" : "play.circle"
+                        (status == .mounted || status == .indexing) ? Term.disconnect : Term.connect,
+                        systemImage: (status == .mounted || status == .indexing) ? "stop.circle" : "play.circle"
                     )
                     .font(.caption)
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.small)
-                .disabled(status == .mounting || status == .unmounting)
+                .disabled(status == .mounting || status == .indexing || status == .unmounting)
 
-                if status == .mounted {
+                if status == .mounted || status == .indexing {
                     Button {
                         NSWorkspace.shared.open(URL(fileURLWithPath: share.mountPoint))
                     } label: {
@@ -102,7 +102,7 @@ struct ProjectCardView: View {
         .overlay(
             RoundedRectangle(cornerRadius: MirageStyle.cardCornerRadius)
                 .strokeBorder(
-                    status == .mounted ? MirageStyle.connected.opacity(0.3) : Color.clear,
+                    (status == .mounted || status == .indexing) ? MirageStyle.connected.opacity(0.3) : Color.clear,
                     lineWidth: 1
                 )
         )
@@ -118,6 +118,21 @@ struct ProjectCardView: View {
 
     @ViewBuilder
     private var downloadStatusView: some View {
+        if status == .indexing {
+            HStack(spacing: 6) {
+                ProgressView()
+                    .controlSize(.small)
+                Text("Indexing files...")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        } else {
+            warmStatusView
+        }
+    }
+
+    @ViewBuilder
+    private var warmStatusView: some View {
         switch warmStatus {
         case .scanning:
             HStack(spacing: 6) {

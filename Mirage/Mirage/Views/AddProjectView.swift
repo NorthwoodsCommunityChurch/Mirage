@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct AddProjectView: View {
     @EnvironmentObject var appState: AppState
@@ -30,6 +31,13 @@ struct AddProjectView: View {
     @State private var tempRemoteName: String?
     @State private var foundKeychainPassword = false
 
+    // Drop-zone state (shown when user clicks "+" without dragging)
+    @State private var showDropZone: Bool
+    @State private var usePrefillFlow: Bool
+    @State private var isDetectingDrop = false
+    @State private var dropDetectError: String?
+    @State private var isDragTargeted = false
+
     init(prefill: SMBDropInfo? = nil) {
         self.prefill = prefill
         _host = State(initialValue: prefill?.host ?? "")
@@ -37,9 +45,20 @@ struct AddProjectView: View {
         _shareName = State(initialValue: prefill?.shareName ?? "")
         _subfolder = State(initialValue: prefill?.subfolder ?? "")
         _displayName = State(initialValue: prefill?.volumeName ?? "")
+        _showDropZone = State(initialValue: prefill == nil)
+        _usePrefillFlow = State(initialValue: prefill != nil)
     }
 
-    private var totalSteps: Int { prefill != nil ? 1 : 3 }
+    private var totalSteps: Int {
+        if showDropZone { return 0 }
+        return usePrefillFlow ? 1 : 3
+    }
+
+    private var viewHeight: CGFloat {
+        if showDropZone { return 340 }
+        if usePrefillFlow { return foundKeychainPassword ? 320 : 400 }
+        return 420
+    }
 
     var body: some View {
         ZStack {
@@ -71,20 +90,22 @@ struct AddProjectView: View {
 
                     Spacer()
 
-                    if step > 1 {
-                        Button("Back") { step -= 1 }
-                    }
+                    if !showDropZone {
+                        if step > 1 {
+                            Button("Back") { step -= 1 }
+                        }
 
-                    if step < totalSteps {
-                        Button("Next") { handleNext() }
-                            .buttonStyle(.borderedProminent)
-                            .tint(MirageStyle.accent)
-                            .disabled(!canProceed)
-                    } else {
-                        Button("Add Folder") { addProject() }
-                            .buttonStyle(.borderedProminent)
-                            .tint(MirageStyle.accent)
-                            .disabled(!canAdd)
+                        if step < totalSteps {
+                            Button("Next") { handleNext() }
+                                .buttonStyle(.borderedProminent)
+                                .tint(MirageStyle.accent)
+                                .disabled(!canProceed)
+                        } else {
+                            Button("Add Folder") { addProject() }
+                                .buttonStyle(.borderedProminent)
+                                .tint(MirageStyle.accent)
+                                .disabled(!canAdd)
+                        }
                     }
                 }
                 .padding(16)
@@ -105,7 +126,7 @@ struct AddProjectView: View {
                 .background(.ultraThinMaterial)
             }
         }
-        .frame(width: 480, height: prefill != nil ? (foundKeychainPassword ? 320 : 400) : 420)
+        .frame(width: 480, height: viewHeight)
         .onAppear {
             if let prefill, let detectedUser = prefill.detectedUsername {
                 // Try to grab the password from macOS keychain
@@ -124,8 +145,9 @@ struct AddProjectView: View {
 
     @ViewBuilder
     private var currentStepView: some View {
-        if prefill != nil {
-            // Single-step drag-drop flow
+        if showDropZone {
+            dropZoneStep
+        } else if usePrefillFlow {
             prefillStep
         } else {
             switch step {
@@ -135,6 +157,123 @@ struct AddProjectView: View {
             default: EmptyView()
             }
         }
+    }
+
+    // MARK: - Drop zone (shown when "+" is clicked)
+
+    private var dropZoneStep: some View {
+        VStack(spacing: 16) {
+            Text("Add a Folder")
+                .font(.headline)
+
+            Text("Drop a folder from your server below,\nor enter details manually.")
+                .font(.callout)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+
+            // Drop target
+            VStack(spacing: 8) {
+                Image(systemName: "arrow.down.doc")
+                    .font(.title2)
+                    .foregroundStyle(isDragTargeted ? MirageStyle.accent : .secondary)
+
+                Text("Drop a network folder here")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .frame(height: 100)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(
+                        style: StrokeStyle(lineWidth: 2, dash: [8]),
+                        antialiased: true
+                    )
+                    .foregroundStyle(isDragTargeted ? MirageStyle.accent : Color.secondary.opacity(0.3))
+            )
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isDragTargeted ? MirageStyle.accent.opacity(0.05) : Color.clear)
+            )
+            .onDrop(of: [.fileURL], isTargeted: $isDragTargeted) { providers in
+                handleSheetDrop(providers)
+            }
+
+            if isDetectingDrop {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Detecting network share...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+
+            if let error = dropDetectError {
+                Label(error, systemImage: "exclamationmark.triangle")
+                    .foregroundStyle(.red)
+                    .font(.caption)
+            }
+
+            Divider()
+
+            Button("Enter details manually") {
+                showDropZone = false
+                usePrefillFlow = false
+            }
+            .buttonStyle(.borderless)
+            .font(.callout)
+            .foregroundStyle(.secondary)
+        }
+    }
+
+    private func handleSheetDrop(_ providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+        provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { data, _ in
+            guard let data = data as? Data,
+                  let url = URL(dataRepresentation: data, relativeTo: nil) else {
+                return
+            }
+            DispatchQueue.main.async {
+                isDetectingDrop = true
+                dropDetectError = nil
+            }
+            AppLogger.shared.log("Sheet drop detected, starting SMB detection for: \(url.path)")
+            DispatchQueue.global(qos: .userInitiated).async {
+                let result = Result { try SMBShareDetector.detect(from: url) }
+                DispatchQueue.main.async {
+                    isDetectingDrop = false
+                    switch result {
+                    case .success(let info):
+                        AppLogger.shared.log("SMB detection succeeded: \(info.host)/\(info.shareName)")
+                        host = info.host
+                        username = info.detectedUsername ?? ""
+                        shareName = info.shareName
+                        subfolder = info.subfolder
+                        displayName = info.volumeName ?? ""
+
+                        // Try keychain lookup
+                        if let detectedUser = info.detectedUsername {
+                            if let systemPassword = KeychainHelper.lookupSystemSMBPassword(
+                                host: info.host,
+                                username: detectedUser
+                            ) {
+                                password = systemPassword
+                                foundKeychainPassword = true
+                            }
+                        }
+
+                        showDropZone = false
+                        usePrefillFlow = true
+
+                    case .failure(let error):
+                        AppLogger.shared.log("SMB detection failed: \(error.localizedDescription)")
+                        dropDetectError = error.localizedDescription
+                    }
+                }
+            }
+        }
+        return true
     }
 
     // MARK: - Drag-and-drop flow (single step)

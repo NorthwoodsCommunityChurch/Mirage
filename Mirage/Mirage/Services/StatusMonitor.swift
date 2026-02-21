@@ -48,8 +48,13 @@ final class StatusMonitor: ObservableObject {
 
         for shareId in shareIds {
             if processManager.isRunning(shareId: shareId) {
-                // Process is running, check if mount point is accessible
-                newStatuses[shareId] = .mounted
+                // Preserve .indexing state — it will be cleared by AppState when indexing finishes
+                let current = mountStatuses[shareId]
+                if current == .indexing {
+                    newStatuses[shareId] = .indexing
+                } else {
+                    newStatuses[shareId] = .mounted
+                }
             } else if let error = processManager.lastError(shareId: shareId) {
                 newStatuses[shareId] = .error(error)
             } else {

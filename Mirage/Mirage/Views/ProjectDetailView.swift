@@ -387,7 +387,7 @@ struct ProjectDetailView: View {
                         changeCacheLocation()
                     }
                     .controlSize(.small)
-                    .disabled(status == .mounted || status == .mounting || status == .unmounting)
+                    .disabled(status == .mounted || status == .indexing || status == .mounting || status == .unmounting)
                 }
             }
 
@@ -491,7 +491,7 @@ struct ProjectDetailView: View {
 
     private var actionsBar: some View {
         HStack(spacing: 12) {
-            if status == .mounted {
+            if status == .mounted || status == .indexing {
                 Button(Term.disconnect) {
                     Task { await appState.unmount(shareId: share.id) }
                 }
@@ -502,6 +502,13 @@ struct ProjectDetailView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .tint(MirageStyle.accent)
+
+                if status == .indexing {
+                    ProgressView().controlSize(.small)
+                    Text("Indexing...")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             } else if status == .mounting || status == .unmounting {
                 ProgressView().controlSize(.small)
                 Text(Term.status(for: status))
