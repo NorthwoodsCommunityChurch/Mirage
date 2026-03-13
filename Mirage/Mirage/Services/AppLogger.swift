@@ -11,7 +11,7 @@ final class AppLogger {
     private let logURL: URL
 
     private init() {
-        let logs = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let logs = FileManager.default.safeURL(for: .libraryDirectory)
             .appendingPathComponent("Logs/MountCache")
         try? FileManager.default.createDirectory(at: logs, withIntermediateDirectories: true)
         logURL = logs.appendingPathComponent("mirage-activity.log")
@@ -28,7 +28,7 @@ final class AppLogger {
         queue.async { [logURL, maxLines] in
             // Append using POSIX for signal safety
             let cPath = logURL.path
-            let fd = open(cPath, O_WRONLY | O_CREAT | O_APPEND, 0o644)
+            let fd = open(cPath, O_WRONLY | O_CREAT | O_APPEND, 0o600)
             guard fd >= 0 else { return }
             line.utf8CString.withUnsafeBufferPointer { buf in
                 // Don't write the null terminator

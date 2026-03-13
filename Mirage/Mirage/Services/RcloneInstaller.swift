@@ -143,8 +143,9 @@ final class RcloneInstaller: ObservableObject {
                     arguments: ["-p", installDir]
                 )
                 if mkdirResult.exitCode != 0 {
-                    // May need sudo — try via AppleScript
-                    try await runPrivileged("mkdir -p \(installDir)")
+                    // May need sudo — try via AppleScript (POSIX-quoted for safety)
+                    let escapedDir = installDir.replacingOccurrences(of: "'", with: "'\\''")
+                    try await runPrivileged("mkdir -p '\(escapedDir)'")
                 }
             }
 
@@ -157,8 +158,10 @@ final class RcloneInstaller: ObservableObject {
                 }
                 try FileManager.default.copyItem(at: extractedBinary, to: URL(fileURLWithPath: destPath))
             } catch {
-                // Permission denied — use privileged helper
-                try await runPrivileged("cp \(extractedBinary.path) \(destPath)")
+                // Permission denied — use privileged helper (POSIX-quoted for safety)
+                let escapedSrc = extractedBinary.path.replacingOccurrences(of: "'", with: "'\\''")
+                let escapedDst = destPath.replacingOccurrences(of: "'", with: "'\\''")
+                try await runPrivileged("cp '\(escapedSrc)' '\(escapedDst)'")
             }
 
             // Make executable

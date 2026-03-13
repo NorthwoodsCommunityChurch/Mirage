@@ -48,11 +48,11 @@ final class CacheManager: ObservableObject {
     // MARK: - Init
 
     init(maxCacheSizeGB: Int = 50) {
-        let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+        let caches = FileManager.default.safeURL(for: .cachesDirectory)
         self.cacheBaseDir = caches.appendingPathComponent("MountCache")
         self.maxCacheSize = UInt64(maxCacheSizeGB) * 1_073_741_824
 
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = FileManager.default.safeURL(for: .applicationSupportDirectory)
         self.offlinePathsURL = appSupport
             .appendingPathComponent("MountCache")
             .appendingPathComponent("offline-paths.plist")

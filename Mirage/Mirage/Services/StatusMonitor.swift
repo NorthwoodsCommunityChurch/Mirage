@@ -27,9 +27,7 @@ final class StatusMonitor: ObservableObject {
                 await self?.poll()
             }
         }
-
-        // Run immediately
-        Task { await poll() }
+        // No immediate poll — initialSetup() already ran refreshCache() before starting the monitor.
     }
 
     func stop() {
@@ -62,7 +60,7 @@ final class StatusMonitor: ObservableObject {
                 let current = mountStatuses[shareId]
                 switch current {
                 case .mounting, .unmounting:
-                    newStatuses[shareId] = current!
+                    newStatuses[shareId] = current ?? .disconnected
                 default:
                     newStatuses[shareId] = .disconnected
                 }

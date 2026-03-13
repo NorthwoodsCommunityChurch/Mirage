@@ -15,14 +15,14 @@ struct RcloneCommandBuilder {
         if let cacheBaseDir {
             self.cacheBaseDir = cacheBaseDir
         } else {
-            let caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
+            let caches = FileManager.default.safeURL(for: .cachesDirectory)
             self.cacheBaseDir = caches.appendingPathComponent("MountCache").path
         }
 
         if let logBaseDir {
             self.logBaseDir = logBaseDir
         } else {
-            let logs = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+            let logs = FileManager.default.safeURL(for: .libraryDirectory)
                 .appendingPathComponent("Logs/MountCache")
             self.logBaseDir = logs.path
         }

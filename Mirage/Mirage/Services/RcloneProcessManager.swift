@@ -266,10 +266,11 @@ final class RcloneProcessManager: ObservableObject {
 
     /// Kill any rclone processes matching a specific remote name.
     private func killOrphanRclone(remoteName: String) async {
-        // Use pkill to find and kill rclone processes with this remote name
+        // Escape regex metacharacters in remote name for safe pkill matching
+        let escaped = NSRegularExpression.escapedPattern(for: remoteName)
         _ = try? await Process.run(
             executableURL: URL(fileURLWithPath: "/usr/bin/pkill"),
-            arguments: ["-f", "rclone nfsmount \(remoteName):"]
+            arguments: ["-f", "rclone nfsmount \(escaped):"]
         )
         // Brief pause to let processes exit
         try? await Task.sleep(nanoseconds: 500_000_000)
@@ -307,6 +308,7 @@ final class RcloneProcessManager: ObservableObject {
 private final class ErrorCollector: @unchecked Sendable {
     private let lock = NSLock()
     private var _value = ""
+    private let maxSize = 65_536 // 64 KB cap to prevent unbounded memory growth
 
     var value: String {
         lock.lock()
@@ -317,7 +319,11 @@ private final class ErrorCollector: @unchecked Sendable {
     func append(_ str: String) {
         lock.lock()
         defer { lock.unlock() }
+        guard _value.count < maxSize else { return }
         _value += str
+        if _value.count > maxSize {
+            _value = String(_value.suffix(maxSize))
+        }
     }
 }
 

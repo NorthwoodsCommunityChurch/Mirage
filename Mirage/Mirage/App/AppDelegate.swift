@@ -14,14 +14,22 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppLogger.shared.log("App terminating")
         guard let appState else { return .terminateNow }
 
-        // Clean up all mounts before quitting.
-        // terminateAll() sends SIGTERM to rclone processes, which triggers
-        // graceful unmount including flushing any pending VFS write-backs.
-        // We wait up to 10 seconds to allow writes to complete before letting
-        // the app terminate (at which point SIGKILL fires as a backstop).
+        // If nothing is mounted, quit immediately
+        let hasActiveMounts = appState.mountStatuses.values.contains { $0.isActive }
+        guard hasActiveMounts else {
+            appState.cleanup()
+            return .terminateNow
+        }
+
+        // Clean up mounts and wait for rclone to flush pending VFS write-backs.
+        // Poll for process exit instead of sleeping a fixed duration.
         Task { @MainActor in
             appState.cleanup()
-            try? await Task.sleep(nanoseconds: 10_000_000_000) // 10 seconds
+            // Wait up to 5 seconds for processes to exit
+            for _ in 0..<50 {
+                if appState.processManager.runningMounts.isEmpty { break }
+                try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+            }
             NSApp.reply(toApplicationShouldTerminate: true)
         }
 

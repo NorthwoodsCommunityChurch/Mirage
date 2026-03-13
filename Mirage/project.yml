@@ -30,8 +30,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.mirage.app
         PRODUCT_NAME: Mirage
-        MARKETING_VERSION: "1.0.3"
-        CURRENT_PROJECT_VERSION: "4"
+        MARKETING_VERSION: "1.0.4"
+        CURRENT_PROJECT_VERSION: "5"
         INFOPLIST_FILE: Mirage/Resources/Info.plist
         CODE_SIGN_ENTITLEMENTS: Mirage/Resources/Mirage.entitlements
         CODE_SIGN_IDENTITY: "-"

@@ -3,11 +3,13 @@ import Foundation
 @MainActor
 final class ShareStore: ObservableObject {
     @Published var shares: [SMBShareConfig] = []
+    /// Non-nil if shares.json failed to load (shown to user via AppState alert)
+    @Published var loadError: String?
 
     private let fileURL: URL
 
     init() {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = FileManager.default.safeURL(for: .applicationSupportDirectory)
         let appDir = appSupport.appendingPathComponent("MountCache", isDirectory: true)
         self.fileURL = appDir.appendingPathComponent("shares.json")
 
@@ -23,7 +25,8 @@ final class ShareStore: ObservableObject {
             decoder.dateDecodingStrategy = .iso8601
             shares = try decoder.decode([SMBShareConfig].self, from: data)
         } catch {
-            print("Failed to load shares: \(error)")
+            AppLogger.shared.log("ERROR: Failed to load shares.json: \(error.localizedDescription)")
+            loadError = error.localizedDescription
         }
     }
 
@@ -35,7 +38,7 @@ final class ShareStore: ObservableObject {
             let data = try encoder.encode(shares)
             try data.write(to: fileURL, options: .atomic)
         } catch {
-            print("Failed to save shares: \(error)")
+            AppLogger.shared.log("ERROR: Failed to save shares.json: \(error.localizedDescription)")
         }
     }
 

@@ -7,7 +7,7 @@ final class CrashReporter {
     static let shared = CrashReporter()
 
     private static let crashFileURL: URL = {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = FileManager.default.safeURL(for: .applicationSupportDirectory)
         return appSupport
             .appendingPathComponent("MountCache")
             .appendingPathComponent("crash-report.json")
@@ -272,7 +272,7 @@ final class CrashReporter {
     }
 
     private func collectRcloneLogs() -> String {
-        let logDir = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first!
+        let logDir = FileManager.default.safeURL(for: .libraryDirectory)
             .appendingPathComponent("Logs/MountCache")
 
         guard let files = try? FileManager.default.contentsOfDirectory(
@@ -298,7 +298,7 @@ final class CrashReporter {
         var info: [String] = []
 
         // Read shares.json
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        let appSupport = FileManager.default.safeURL(for: .applicationSupportDirectory)
         let sharesFile = appSupport.appendingPathComponent("MountCache/shares.json")
         if let data = try? Data(contentsOf: sharesFile),
            let shares = try? JSONDecoder().decode([ShareSummary].self, from: data) {
@@ -390,7 +390,7 @@ final class CrashReporter {
 
         // Write using POSIX for maximum safety
         let path = crashFileURL.path
-        let fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0o644)
+        let fd = open(path, O_WRONLY | O_CREAT | O_TRUNC, 0o600)
         guard fd >= 0 else { return }
         data.withUnsafeBytes { buf in
             if let ptr = buf.baseAddress {

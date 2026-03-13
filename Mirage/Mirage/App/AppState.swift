@@ -80,18 +80,17 @@ final class AppState: ObservableObject {
 
     func initialSetup() async {
         AppLogger.shared.log("Initial setup started")
+
+        // FAST PHASE: validate rclone and start status monitor so UI is responsive
         let validation = await processManager.validateRclone()
         rcloneValid = validation.valid
         rcloneVersion = validation.version
         AppLogger.shared.log("rclone valid: \(validation.valid), version: \(validation.version ?? "nil")")
 
-        // Clean up orphan rclone processes and stale NFS mounts from
-        // previous app sessions that may have been force-quit.
-        await processManager.cleanupOrphanMounts(shares: shareStore.shares)
-
-        // Initial cache scan + enforce limit on startup
-        await cacheManager.refreshCache(shareIds: shareStore.shares.map(\.id))
-        _ = await cacheManager.evictIfNeeded(shareIds: shareStore.shares.map(\.id))
+        // Show share load errors to the user
+        if let loadError = shareStore.loadError {
+            showError("Failed to load saved shares: \(loadError)")
+        }
 
         statusMonitor.start(
             processManager: processManager,
@@ -99,8 +98,24 @@ final class AppState: ObservableObject {
             shareIds: shareStore.shares.map(\.id)
         )
 
-        if autoMountOnLaunch && rcloneValid {
-            await mountAutoShares()
+        // SLOW PHASE: run cleanup, cache scan, and auto-mount in the background
+        // so the UI doesn't freeze waiting for network operations.
+        Task {
+            // Clean up orphan rclone processes and stale NFS mounts from
+            // previous app sessions that may have been force-quit.
+            await processManager.cleanupOrphanMounts(shares: shareStore.shares)
+
+            // Initial cache scan + enforce limit on startup
+            await cacheManager.refreshCache(shareIds: shareStore.shares.map(\.id))
+            _ = await cacheManager.evictIfNeeded(shareIds: shareStore.shares.map(\.id))
+
+            // Mount auto-shares — each as its own independent Task so they
+            // run concurrently instead of blocking each other sequentially.
+            if autoMountOnLaunch && rcloneValid {
+                for share in shareStore.shares where share.autoMount {
+                    Task { await self.mount(shareId: share.id) }
+                }
+            }
         }
     }
 
@@ -209,11 +224,7 @@ final class AppState: ObservableObject {
         }
     }
 
-    private func mountAutoShares() async {
-        for share in shareStore.shares where share.autoMount {
-            await mount(shareId: share.id)
-        }
-    }
+    // mountAutoShares removed — auto-mount now fires concurrent Tasks in initialSetup()
 
     // MARK: - Share management
 
